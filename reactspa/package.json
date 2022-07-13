@@ -3,17 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@lexical/react": "^0.3.5",
+    "http-proxy-middleware": "^2.0.6",
+    "lexical": "^0.3.5",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
+    "react-router-dom": "^6.3.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "prestart": "node aspnetcore-https && node aspnetcore-react",
     "dev": "ts-node ./scripts/check-port-in-use.js && cross-env NODE_ENV=development TS_NODE_TRANPILE_ONLY=true webpack-dev-server --config ./configs/webpack.config.dev.ts",
     "start": "ts-node ./scripts/check-port-in-use.js && cross-env NODE_ENV=development TS_NODE_TRANPILE_ONLY=true webpack serve --config ./configs/webpack.config.dev.ts",
     "build": "cross-env NODE_ENV=production TS_NODE_TRANPILE_ONLY=true webpack --config ./configs/webpack.config.prod.ts",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
-    "test": "jest",
-    "prepare": "husky install"
+    "test": "jest"
   },
   "eslintConfig": {
     "extends": [
@@ -149,7 +153,7 @@
     "webpack": "^5.72.1",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.9.0",
+    "webpack-dev-server": "^4.9.3",
     "webpack-merge": "^5.8.0"
   }
 }

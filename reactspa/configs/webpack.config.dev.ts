@@ -1,38 +1,49 @@
-import "webpack-dev-server";
-import baseConfig from "./webpack.config.base";
-import webpack from "webpack";
-import path from "path";
-import merge from "webpack-merge";
-import checkNodeEnv from "../scripts/check-node-env";
-import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import webpackPaths from "./webpack.paths";
+import 'webpack-dev-server';
+import baseConfig from './webpack.config.base';
+import webpack from 'webpack';
+import path from 'path';
+import merge from 'webpack-merge';
+import checkNodeEnv from '../scripts/check-node-env';
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import webpackPaths from './webpack.paths';
+import chalk from 'chalk';
+import paths from './webpack.paths'
+import prepareProxy from '../scripts/WebpackDevServerUtils';
 
-if (process.env.NODE_ENV === "production") {
-  checkNodeEnv("development");
+if (process.env.NODE_ENV === 'production') {
+  checkNodeEnv('development');
 }
 
 const port = process.env.PORT || 3001;
+const proxySetting=require(paths.packagePath).proxy;
+const proxyConfig=prepareProxy(
+  proxySetting,
+  paths.appPublic,
+  paths.publicUrlOrPath
+)
+
+const proxy=proxyConfig;
 
 const configuration: webpack.Configuration = {
-  devtool: "inline-source-map",
+  devtool: 'inline-source-map',
 
-  mode: "development",
+  mode: 'development',
 
-  target: ["web"],
+  target: ['web'],
 
   entry: [
     `webpack-dev-server/client?http://localhost:${port}/dist`,
-    "webpack/hot/only-dev-server",
-    path.join(webpackPaths.srcPath, "index.tsx"),
+    'webpack/hot/only-dev-server',
+    path.join(webpackPaths.srcPath, 'index.tsx'),
   ],
 
   output: {
     path: webpackPaths.distPath,
-    publicPath: "/",
-    filename: "index.dev.js",
+    publicPath: '/',
+    filename: 'index.dev.js',
     library: {
-      type: "umd",
+      type: 'umd',
     },
   },
 
@@ -41,47 +52,46 @@ const configuration: webpack.Configuration = {
       {
         test: /\.s?css$/,
         use: [
-          "style-loader",
+          'style-loader',
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
               module: true,
               sourceMap: true,
               importLoaders: 1,
             },
           },
-          "sass-loader",
+          'sass-loader',
         ],
         include: /\.module\.s?(c|a)ss$/,
       },
       {
         test: /\.s?css$/,
-        use: ["style-loader", "css-loader", "sass-loader"],
+        use: ['style-loader', 'css-loader', 'sass-loader'],
         exclude: /\.module\.s?(c|a)ss$/,
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        type: "asset/resource",
+        type: 'asset/resource',
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/,
-        type: "asset/resource",
+        type: 'asset/resource',
       },
     ],
   },
   plugins: [
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.EnvironmentPlugin({
-      NODE_ENV: "development",
+      NODE_ENV: 'development',
     }),
     new webpack.LoaderOptionsPlugin({
       debug: true,
     }),
-    new webpack.HotModuleReplacementPlugin(),
     new ReactRefreshWebpackPlugin(),
     new HtmlWebpackPlugin({
-      filename: path.join("index.html"),
-      template: path.join(webpackPaths.rootPath, "/public/index.html"),
+      filename: path.join('index.html'),
+      template: path.join(webpackPaths.rootPath, '/public/index.html'),
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
@@ -89,8 +99,8 @@ const configuration: webpack.Configuration = {
       },
       isBrowser: false,
       env: process.env.NODE_ENV,
-      isDevelopment: process.env.NODE_ENV !== "production",
-      nodeModules: path.join(__dirname, "../dist/node_modules"),
+      isDevelopment: process.env.NODE_ENV !== 'production',
+      nodeModules: path.join(__dirname, '../dist/node_modules'),
     }),
   ],
 
@@ -101,17 +111,28 @@ const configuration: webpack.Configuration = {
 
   devServer: {
     port,
+    headers:{
+      'Access-Control-Allow-Origin':'*',
+      'Access-Control-Allow-Methods':'*',
+      'Access-Control-Allow-Headers':'*'
+    },
     compress: true,
     hot: true,
-    headers: { "Access-Control-Allow-Origin": "*" },
     static: {
-      publicPath: "/",
+      directory:paths.appPublic,
+      publicPath: paths.publicUrlOrPath,
     },
     historyApiFallback: {
       verbose: true,
+      disableDotRule: true,
     },
+    proxy:proxyConfig,
     setupMiddlewares(middlewares) {
-      console.log("Starting webpack dev server...");
+      console.log(
+        chalk.blueBright.bold(
+          `Starting webpack dev server at http://localhost:${port}...`
+        )
+      );
       return middlewares;
     },
   },

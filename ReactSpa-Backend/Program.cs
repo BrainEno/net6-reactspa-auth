@@ -64,4 +64,10 @@ app.UseMiddleware<JwtMiddleware>();
 
 app.MapControllers();
 
-app.Run("http://localhost:4000");
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller}/{action=Index}/{id?}");
+
+app.MapFallbackToFile("index.html");
+
+app.Run("https://localhost:5002");
